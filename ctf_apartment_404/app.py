@@ -232,7 +232,7 @@ def phase_3_iot():
                 
     with tabs[1]:
         st.subheader("GALLERY")
-        st.image(get_asset_path("cat_fluffy.jpg"), caption="Fluffy - The best cat ever", width=300)
+        st.image(get_asset_path("cat.jpg"), caption="Fluffy - The best cat ever", width=300)
         
     with tabs[2]:
         st.subheader("NOTES")
