@@ -26,14 +26,42 @@ def create_glitched_image():
     draw.text((10, 10), "CAM_01 [LIVING ROOM]", fill=(0, 255, 0))
     draw.text((10, 30), "REC: 11:42 PM", fill=(255, 0, 0))
     
-    img_path = os.path.join(ASSETS_DIR, "scene.jpg")
-    img.save(img_path)
+    # Add EXIF data
+    exif = img.getexif()
+    # 270 is ImageDescription
+    exif[270] = "Note_to_self: Encrypted_Journal_Pass: VIGENERE"
     
-    # Append the hidden clue
+    img_path = os.path.join(ASSETS_DIR, "scene.jpg")
+    img.save(img_path, exif=exif)
+    
+    # Append the hidden clue (redundancy for strings command)
     with open(img_path, "ab") as f:
         f.write(b"\n\n[EXIF_DATA_CORRUPT] Note_to_self: Encrypted_Journal_Pass: VIGENERE")
     
     print(f"Created {img_path}")
+
+
+def add_wav_metadata(file_path, artist, comment):
+    with open(file_path, 'rb') as f:
+        data = f.read()
+    
+    # Construct LIST INFO chunk
+    def make_chunk(tag, value):
+        value = value.encode('utf-8') + b'\0'
+        if len(value) % 2 != 0: value += b'\0' # Pad to even word boundary
+        return tag.encode('ascii') + struct.pack('<I', len(value)) + value
+
+    info_data = b'INFO' + make_chunk('IART', artist) + make_chunk('ICMT', comment)
+    list_chunk = b'LIST' + struct.pack('<I', len(info_data)) + info_data
+    
+    # Update RIFF size (at offset 4, 4 bytes, little endian)
+    current_size = struct.unpack('<I', data[4:8])[0]
+    new_size = current_size + len(list_chunk)
+    
+    new_data = data[:4] + struct.pack('<I', new_size) + data[8:] + list_chunk
+    
+    with open(file_path, 'wb') as f:
+        f.write(new_data)
 
 def create_corrupted_audio():
     # Create a wav file with high pitched noise
@@ -60,9 +88,12 @@ def create_corrupted_audio():
             data = struct.pack('<h', max(-32768, min(32767, value)))
             wav_file.writeframes(data)
             
-    # Append the hidden clue (simulating spectrogram/reverse audio find)
+    # Add metadata with the clue
+    add_wav_metadata(audio_path, "Adrian Vance", "SPECTRAL_ANALYSIS_RESULT: It was a deepfake. Marcus is innocent.")
+            
+    # Append the hidden clue (simulating spectrogram/reverse audio find) - Redundancy
     with open(audio_path, "ab") as f:
-        f.write(b"\n\n[SPECTRAL_ANALYSIS_RESULT]: It was a deepfake. Marcus is innocent.")
+        f.write(b"\n\n[HIDDEN_LAYER] It was a deepfake.")
 
     print(f"Created {audio_path}")
 
