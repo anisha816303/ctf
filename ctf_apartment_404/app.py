@@ -317,10 +317,13 @@ def main():
     elif st.session_state.phase == 2:
         phase_2_webcam()
     elif st.session_state.phase == 3:
+        ensure_assets()
         phase_3_iot()
     elif st.session_state.phase == 4:
+        ensure_assets()
         phase_4_audio()
     elif st.session_state.phase == 5:
+        ensure_assets()
         phase_5_admin()
 
 if __name__ == "__main__":
