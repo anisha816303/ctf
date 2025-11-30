@@ -10,10 +10,26 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+import setup_assets
+
 # --- Assets ---
 ASSETS_DIR = "assets"
 
+def ensure_assets():
+    if not os.path.exists(ASSETS_DIR):
+        os.makedirs(ASSETS_DIR)
+    
+    required_assets = ["scene.jpg", "evidence_audio.wav", "cat.jpg"]
+    missing = [f for f in required_assets if not os.path.exists(os.path.join(ASSETS_DIR, f))]
+    
+    if missing:
+        # Generate all assets if any are missing to be safe
+        setup_assets.create_glitched_image()
+        setup_assets.create_corrupted_audio()
+        setup_assets.create_cat_image()
+
 def get_asset_path(filename):
+    ensure_assets() # Check before getting path
     return os.path.join(ASSETS_DIR, filename)
 
 # --- CSS & Styling ---
